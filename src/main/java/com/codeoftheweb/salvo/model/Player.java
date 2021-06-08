@@ -1,6 +1,10 @@
 package com.codeoftheweb.salvo.model;
 
 import org.hibernate.annotations.GenericGenerator;
+import org.springframework.context.annotation.Bean;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
 import javax.persistence.*;
 import java.util.*;
 
@@ -9,11 +13,17 @@ import static java.util.stream.Collectors.toList;
 @Entity
 public class Player {
 
+    @Bean
+    public PasswordEncoder passwordEncoder(){
+        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
     @GenericGenerator(name = "native", strategy = "native")
     private long id;
-    private String userName;
+    private String username;
+    private String password;
 
     @OneToMany(mappedBy = "player", fetch = FetchType.EAGER)
     private Set<GamePlayer> games;
@@ -24,20 +34,29 @@ public class Player {
     public Player(){
     }
 
-    public Player(String _userName){
-        this.userName = _userName;
+    public Player(String _userName, String _password){
+        this.username = _userName;
+        this.password = passwordEncoder().encode(_password);
     }
 
     public long getId() {
         return this.id;
     }
 
-    public String getUserName(){
-        return this.userName;
+    public String getUsername(){
+        return this.username;
     }
 
-    public void setUserName(String _userName){
-        this.userName = _userName;
+    public void setUsername(String _userName){
+        this.username = _userName;
+    }
+
+    public String getPassword(){
+        return this.password;
+    }
+
+    public void setPassword(String _password){
+        this.password = _password;
     }
 
     public void addGame(GamePlayer _gamePlayer){
@@ -69,7 +88,7 @@ public class Player {
     public Map<String, Object> getInfo(){
         Map<String, Object> dto = new LinkedHashMap<String, Object>();
         dto.put("id", getId());
-        dto.put("email", getUserName());
+        dto.put("email", getUsername());
         return dto;
     }
 }
