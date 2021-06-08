@@ -1,7 +1,6 @@
 package com.codeoftheweb.salvo.service;
 
 import com.codeoftheweb.salvo.model.Game;
-
 import java.util.List;
 
 public interface GameService {

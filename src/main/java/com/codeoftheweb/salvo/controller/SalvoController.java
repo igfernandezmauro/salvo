@@ -4,8 +4,9 @@ import com.codeoftheweb.salvo.model.Game;
 import com.codeoftheweb.salvo.model.GamePlayer;
 import com.codeoftheweb.salvo.model.Player;
 import com.codeoftheweb.salvo.repository.PlayerRepository;
-import com.codeoftheweb.salvo.service.GameService;
+import com.codeoftheweb.salvo.service.PlayerService;
 import com.codeoftheweb.salvo.service.implementation.GamePlayerServiceImplementation;
+import com.codeoftheweb.salvo.service.implementation.GameServiceImplementation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,13 +25,16 @@ import static java.util.stream.Collectors.toList;
 public class SalvoController {
 
     @Autowired
-    private GameService gameService;
+    private GameServiceImplementation gameServiceImplementation;
 
     @Autowired
     private GamePlayerServiceImplementation gamePlayerServiceImplementation;
 
     @Autowired
-    private PlayerRepository playerRepository;
+    private PlayerService playerService;
+
+    public SalvoController() {
+    }
 
     @RequestMapping("/games")
     public Map<String, Object> getGames(Authentication auth){
@@ -41,7 +45,7 @@ public class SalvoController {
         else {
             dto.put("player", "Guest");
         }
-        dto.put("games", gameService.getGame().stream().map(Game::getInfo).collect(toList()));
+        dto.put("games", gameServiceImplementation.getGame().stream().map(Game::getInfo).collect(toList()));
         return dto;
     }
 
@@ -59,16 +63,16 @@ public class SalvoController {
         if(username.isEmpty() || password.isEmpty()){
             return new ResponseEntity<>(makeMap("error", "Missing data"), HttpStatus.FORBIDDEN);
         }
-        Player player = playerRepository.findByUsername(username);
+        Player player = playerService.findPlayerByUsername(username);
         if(player != null){
             return new ResponseEntity<>(makeMap("error", "Username already in use"), HttpStatus.FORBIDDEN);
         }
-        Player newPlayer = playerRepository.save(new Player(username, password));
+        Player newPlayer = playerService.savePlayer(new Player(username, password));
         return new ResponseEntity<>(makeMap("name", newPlayer.getUsername()), HttpStatus.CREATED);
     }
 
     private Player getAuthenticatedPlayer(Authentication auth){
-        return playerRepository.findByUsername(auth.getName());
+        return playerService.findPlayerByUsername(auth.getName());
     }
 
     private boolean isGuest(Authentication auth){
