@@ -4,9 +4,10 @@ import com.codeoftheweb.salvo.model.Player;
 import com.codeoftheweb.salvo.repository.PlayerRepository;
 import com.codeoftheweb.salvo.service.PlayerService;
 import org.springframework.beans.factory.annotation.Autowired;
-
+import org.springframework.stereotype.Service;
 import java.util.List;
 
+@Service
 public class PlayerServiceImplementation implements PlayerService {
 
     @Autowired
@@ -19,7 +20,7 @@ public class PlayerServiceImplementation implements PlayerService {
 
     @Override
     public List<Player> getPlayer() {
-        return null;
+        return playerRepository.findAll();
     }
 
     @Override

@@ -20,7 +20,7 @@ public class GamePlayerServiceImplementation implements GamePlayerService {
 
     @Override
     public List<GamePlayer> getGamePlayer() {
-        return null;
+        return gamePlayerRepository.findAll();
     }
 
     @Override
