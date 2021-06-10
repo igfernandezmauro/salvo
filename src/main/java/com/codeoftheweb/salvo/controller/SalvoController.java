@@ -89,15 +89,16 @@ public class SalvoController {
     }
 
     @RequestMapping("/game_view/{nn}")
-    public Map<String, Object> getGameViews(@PathVariable long nn, Authentication auth){
+    public ResponseEntity<Map<String, Object>> getGameViews(@PathVariable long nn, Authentication auth){
         GamePlayer gp = gamePlayerServiceImplementation.findGamePlayerById(nn);
         Player player = getAuthenticatedPlayer(auth);
         if(gp != null){
             if(gp.getPlayer().equals(player)) {
-                return gp.getGame().getInfo(gp);
+                return new ResponseEntity<>(gp.getGame().getInfo(gp), HttpStatus.OK);
             }
+            return new ResponseEntity<>(makeMap("error", "Can't see other player's information"), HttpStatus.FORBIDDEN);
         }
-        return null;
+        return new ResponseEntity<>(makeMap("error", "GamePlayer doesn't exist"), HttpStatus.BAD_REQUEST);
     }
 
     @RequestMapping(path = "/players", method = RequestMethod.POST)
