@@ -15,7 +15,7 @@ public class Ship {
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
     @GenericGenerator(name = "native", strategy = "native")
     private long id;
-    private String shipType;
+    private String type;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "gamePlayer_id")
@@ -23,27 +23,27 @@ public class Ship {
 
     @ElementCollection
     @Column(name = "location")
-    private List<String> locations = new ArrayList<>();
+    private List<String> shipLocations = new ArrayList<>();
 
     public Ship(){
     }
 
     public Ship(String _shipType, GamePlayer _gamePlayer, List<String> _locations){
-        this.shipType = _shipType;
+        this.type = _shipType;
         _gamePlayer.addShip(this);
-        this.locations = _locations;
+        this.shipLocations = _locations;
     }
 
     public long getId() {
         return this.id;
     }
 
-    public String getShipType(){
-        return this.shipType;
+    public String getType(){
+        return this.type;
     }
 
-    public void setShipType(String _shipType){
-        this.shipType = _shipType;
+    public void setType(String _shipType){
+        this.type = _shipType;
     }
 
     public GamePlayer getGamePlayer(){
@@ -54,18 +54,18 @@ public class Ship {
         this.gamePlayer = _gamePlayer;
     }
 
-    public List<String> getLocations(){
-        return this.locations;
+    public List<String> getShipLocations(){
+        return this.shipLocations;
     }
 
     public void addLocation(String _location){
-        this.locations.add(_location);
+        this.shipLocations.add(_location);
     }
 
     public Map<String, Object> getInfo(){
         Map<String, Object> dto = new LinkedHashMap<String, Object>();
-        dto.put("type", getShipType());
-        dto.put("locations", getLocations());
+        dto.put("type", getType());
+        dto.put("locations", getShipLocations());
         return dto;
     }
 }
