@@ -8,15 +8,13 @@ import com.codeoftheweb.salvo.service.implementation.GamePlayerServiceImplementa
 import com.codeoftheweb.salvo.service.implementation.GameServiceImplementation;
 import com.codeoftheweb.salvo.service.implementation.PlayerServiceImplementation;
 import com.codeoftheweb.salvo.service.implementation.ShipServiceImplementation;
+import com.codeoftheweb.salvo.util.Util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.*;
-
 import static java.util.stream.Collectors.toList;
 
 @RestController
@@ -40,7 +38,7 @@ public class GamesController {
     @RequestMapping(path = "/games", method = RequestMethod.GET)
     public Map<String, Object> getGames(Authentication auth){
         Map<String, Object> dto = new LinkedHashMap<String, Object>();
-        if(!isGuest(auth)){
+        if(!Util.isGuest(auth)){
             dto.put("player", getAuthenticatedPlayer(auth).getInfo());
         }
         else {
@@ -52,13 +50,13 @@ public class GamesController {
 
     @RequestMapping(path = "/games", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> createGame(Authentication auth){
-        if(!isGuest(auth)){
+        if(!Util.isGuest(auth)){
             Player player = getAuthenticatedPlayer(auth);
             Game newGame = gameServiceImplementation.saveGame(new Game(new Date()));
             GamePlayer newGamePlayer = gamePlayerServiceImplementation.saveGamePlayer(new GamePlayer(newGame, player));
-            return new ResponseEntity<>(makeMap("gpid", newGamePlayer.getId()), HttpStatus.CREATED);
+            return new ResponseEntity<>(Util.makeMap("gpid", newGamePlayer.getId()), HttpStatus.CREATED);
         }
-        return new ResponseEntity<>(makeMap("error", "User not logged in"), HttpStatus.UNAUTHORIZED);
+        return new ResponseEntity<>(Util.makeMap("error", "User not logged in"), HttpStatus.UNAUTHORIZED);
     }
 
     @RequestMapping(path = "/games/{gameId}/players", method = RequestMethod.GET)
@@ -71,27 +69,27 @@ public class GamesController {
 
     @RequestMapping(path = "/game/{gameId}/players", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> joinGame(@PathVariable long gameId, Authentication auth){
-        if(!isGuest(auth)){
+        if(!Util.isGuest(auth)){
             Game game = gameServiceImplementation.findGameById(gameId);
             if(game != null){
-                if(!isGameFull(game)){
+                if(!Util.isGameFull(game)){
                     Player player = getAuthenticatedPlayer(auth);
                     if(!game.getPlayers().contains(player)){
                         GamePlayer newGamePlayer = gamePlayerServiceImplementation.saveGamePlayer(new GamePlayer(game, player));
-                        return new ResponseEntity<>(makeMap("gpid", newGamePlayer.getId()), HttpStatus.CREATED);
+                        return new ResponseEntity<>(Util.makeMap("gpid", newGamePlayer.getId()), HttpStatus.CREATED);
                     }
-                    return new ResponseEntity<>(makeMap("error", "Player already in game"), HttpStatus.FORBIDDEN);
+                    return new ResponseEntity<>(Util.makeMap("error", "Player already in game"), HttpStatus.FORBIDDEN);
                 }
-                return new ResponseEntity<>(makeMap("error", "Game is full"), HttpStatus.FORBIDDEN);
+                return new ResponseEntity<>(Util.makeMap("error", "Game is full"), HttpStatus.FORBIDDEN);
             }
-            return new ResponseEntity<>(makeMap("error", "No such game"), HttpStatus.FORBIDDEN);
+            return new ResponseEntity<>(Util.makeMap("error", "No such game"), HttpStatus.FORBIDDEN);
         }
-        return new ResponseEntity<>(makeMap("error", "User not logged in"), HttpStatus.UNAUTHORIZED);
+        return new ResponseEntity<>(Util.makeMap("error", "User not logged in"), HttpStatus.UNAUTHORIZED);
     }
 
     @RequestMapping(path = "/games/players/{gamePlayerId}/ships", method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> getShipsGameplayer(@PathVariable long gamePlayerId, Authentication auth){
-        if(!isGuest(auth)){
+        if(!Util.isGuest(auth)){
             GamePlayer gp = gamePlayerServiceImplementation.findGamePlayerById(gamePlayerId);
             if(gp != null){
                 if(gp.getPlayer().equals(getAuthenticatedPlayer(auth))){
@@ -99,17 +97,17 @@ public class GamesController {
                     dto.put("ships", gp.getShips().stream().map(Ship::getInfo).collect(toList()));
                     return new ResponseEntity<>(dto, HttpStatus.OK);
                 }
-                return new ResponseEntity<>(makeMap("error", "Can't see other player's information"), HttpStatus.UNAUTHORIZED);
+                return new ResponseEntity<>(Util.makeMap("error", "Can't see other player's information"), HttpStatus.UNAUTHORIZED);
             }
-            return new ResponseEntity<>(makeMap("error", "Gameplayer doesn't exist"), HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<>(Util.makeMap("error", "Gameplayer doesn't exist"), HttpStatus.UNAUTHORIZED);
         }
-        return new ResponseEntity<>(makeMap("error", "User not logged in"), HttpStatus.UNAUTHORIZED);
+        return new ResponseEntity<>(Util.makeMap("error", "User not logged in"), HttpStatus.UNAUTHORIZED);
     }
 
     @RequestMapping(path = "/games/players/{gamePlayerId}/ships", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> createShips(@PathVariable long gamePlayerId, @RequestBody List<Ship> ships,
                                                            Authentication auth){
-        if(!isGuest(auth)){
+        if(!Util.isGuest(auth)){
             GamePlayer gp = gamePlayerServiceImplementation.findGamePlayerById(gamePlayerId);
             if(gp != null){
                 if(gp.getPlayer().equals(getAuthenticatedPlayer(auth))){
@@ -119,32 +117,23 @@ public class GamesController {
                             gp.addShip(newShip);
                             shipServiceImplementation.saveShip(newShip);
                         }
-                        return new ResponseEntity<>(makeMap("OK", "Ships placed"), HttpStatus.CREATED);
+                        return new ResponseEntity<>(Util.makeMap("OK", "Ships placed"), HttpStatus.CREATED);
                     }
-                    return new ResponseEntity<>(makeMap("error", "Ships already placed"), HttpStatus.FORBIDDEN);
+                    return new ResponseEntity<>(Util.makeMap("error", "Ships already placed"), HttpStatus.FORBIDDEN);
                 }
-                return new ResponseEntity<>(makeMap("error", "Can't create other player's ships"), HttpStatus.UNAUTHORIZED);
+                return new ResponseEntity<>(Util.makeMap("error", "Can't create other player's ships"), HttpStatus.UNAUTHORIZED);
             }
-            return new ResponseEntity<>(makeMap("error", "Gameplayer doesn't exist"), HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<>(Util.makeMap("error", "Gameplayer doesn't exist"), HttpStatus.UNAUTHORIZED);
         }
-        return new ResponseEntity<>(makeMap("error", "User not logged in"), HttpStatus.UNAUTHORIZED);
+        return new ResponseEntity<>(Util.makeMap("error", "User not logged in"), HttpStatus.UNAUTHORIZED);
     }
+
+    /*@RequestMapping(path = "/games/players/{gamePlayerId}/salvoes", method = RequestMethod.GET)
+    public ResponseEntity<Map<String, Object>> getSalvoesGameplayer(@PathVariable long gamePlayerId, Authentication auth){
+
+    }*/
 
     private Player getAuthenticatedPlayer(Authentication auth){
         return playerServiceImplementation.findPlayerByUsername(auth.getName());
-    }
-
-    private boolean isGuest(Authentication auth){
-        return auth == null || auth instanceof AnonymousAuthenticationToken;
-    }
-
-    private Map<String, Object> makeMap(String key, Object value){
-        Map<String, Object> map = new HashMap<>();
-        map.put(key, value);
-        return map;
-    }
-
-    private boolean isGameFull(Game game){
-        return !(game.getGamePlayers().size() < 2);
     }
 }
