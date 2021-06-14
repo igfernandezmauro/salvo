@@ -1,13 +1,7 @@
 package com.codeoftheweb.salvo.controller;
 
-import com.codeoftheweb.salvo.model.Game;
-import com.codeoftheweb.salvo.model.GamePlayer;
-import com.codeoftheweb.salvo.model.Player;
-import com.codeoftheweb.salvo.model.Ship;
-import com.codeoftheweb.salvo.service.implementation.GamePlayerServiceImplementation;
-import com.codeoftheweb.salvo.service.implementation.GameServiceImplementation;
-import com.codeoftheweb.salvo.service.implementation.PlayerServiceImplementation;
-import com.codeoftheweb.salvo.service.implementation.ShipServiceImplementation;
+import com.codeoftheweb.salvo.model.*;
+import com.codeoftheweb.salvo.service.implementation.*;
 import com.codeoftheweb.salvo.util.Util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -32,6 +26,9 @@ public class GamesController {
 
     @Autowired
     ShipServiceImplementation shipServiceImplementation;
+
+    @Autowired
+    SalvoServiceImplementation salvoServiceImplementation;
 
     public GamesController(){}
 
@@ -112,10 +109,11 @@ public class GamesController {
             if(gp != null){
                 if(gp.getPlayer().equals(getAuthenticatedPlayer(auth))){
                     if(gp.getShips().size() == 0){
-                        for(int i = 0; i < ships.size(); i++){
-                            Ship newShip = ships.get(i);
-                            gp.addShip(newShip);
-                            shipServiceImplementation.saveShip(newShip);
+                        for(Ship ship : ships){
+                            if(validateShipLength(ship)){
+                                gp.addShip(ship);
+                                shipServiceImplementation.saveShip(ship);
+                            }
                         }
                         return new ResponseEntity<>(Util.makeMap("OK", "Ships placed"), HttpStatus.CREATED);
                     }
@@ -128,12 +126,72 @@ public class GamesController {
         return new ResponseEntity<>(Util.makeMap("error", "User not logged in"), HttpStatus.UNAUTHORIZED);
     }
 
-    /*@RequestMapping(path = "/games/players/{gamePlayerId}/salvoes", method = RequestMethod.GET)
+    @RequestMapping(path = "/games/players/{gamePlayerId}/salvoes", method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> getSalvoesGameplayer(@PathVariable long gamePlayerId, Authentication auth){
+        if(!Util.isGuest(auth)){
+            GamePlayer gp = gamePlayerServiceImplementation.findGamePlayerById(gamePlayerId);
+            if(gp != null){
+                if(gp.getPlayer().equals(getAuthenticatedPlayer(auth))){
+                    Map<String, Object> dto = new LinkedHashMap<String, Object>();
+                    dto.put("salvoes", gp.getSalvoes().stream().map(Salvo::getInfo).collect(toList()));
+                    return new ResponseEntity<>(dto, HttpStatus.OK);
+                }
+                return new ResponseEntity<>(Util.makeMap("error", "Can't see other player's information"), HttpStatus.UNAUTHORIZED);
+            }
+            return new ResponseEntity<>(Util.makeMap("error", "Gameplayer doesn't exist"), HttpStatus.UNAUTHORIZED);
+        }
+        return new ResponseEntity<>(Util.makeMap("error", "User not logged in"), HttpStatus.UNAUTHORIZED);
+    }
 
-    }*/
+    @RequestMapping(path = "/games/players/{gamePlayerId}/salvoes", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> createSalvo(@PathVariable long gamePlayerId, @RequestBody Salvo salvo,
+                                                           Authentication auth){
+        if(!Util.isGuest(auth)){
+            GamePlayer gp = gamePlayerServiceImplementation.findGamePlayerById(gamePlayerId);
+            if(gp != null){
+                if(gp.getPlayer().equals(getAuthenticatedPlayer(auth))){
+                    int selfSalvoes = gp.getSalvoes().size();
+                    int opponentSalvoes = gp.getGame().getGamePlayers().stream().
+                            map(gamePlayer -> gamePlayer.getPlayer() != gp.getPlayer()).collect(toList()).size();
+                    if(selfSalvoes <= opponentSalvoes){
+                        int shotsAmmount = salvo.getSalvoLocations().size();
+                        if(shotsAmmount >= 1 && shotsAmmount <= 5){
+                            int salvoesFired = gp.getSalvoes().size();
+                            salvo.setTurn(salvoesFired+1);
+                            gp.addSalvo(salvo);
+                            salvoServiceImplementation.saveSalvo(salvo);
+                            return new ResponseEntity<>(Util.makeMap("OK", "Salvo fired"), HttpStatus.CREATED);
+                        }
+                        return new ResponseEntity<>(Util.makeMap("error", "Wrong shots ammount for Salvo"), HttpStatus.UNAUTHORIZED);
+                    }
+                    return new ResponseEntity<>(Util.makeMap("error", "Can't fire salvo yet"), HttpStatus.UNAUTHORIZED);
+                }
+                return new ResponseEntity<>(Util.makeMap("error", "Can't fire other player's salvoes"), HttpStatus.UNAUTHORIZED);
+            }
+            return new ResponseEntity<>(Util.makeMap("error", "Gameplayer doesn't exist"), HttpStatus.UNAUTHORIZED);
+        }
+        return new ResponseEntity<>(Util.makeMap("error", "User not logged in"), HttpStatus.UNAUTHORIZED);
+    }
 
     private Player getAuthenticatedPlayer(Authentication auth){
         return playerServiceImplementation.findPlayerByUsername(auth.getName());
+    }
+
+    private boolean validateShipLength(Ship ship){
+        String shipType = ship.getType();
+        int length = ship.getShipLocations().size();
+        switch (shipType){
+            case "carrier":
+                return length == 5;
+            case "battleship":
+                return length == 4;
+            case "submarine":
+            case "destroyer":
+                return length == 3;
+            case "patrolboat":
+                return length == 2;
+            default:
+                return false;
+        }
     }
 }

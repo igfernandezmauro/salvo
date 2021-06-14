@@ -20,7 +20,7 @@ public class Salvo {
 
     @ElementCollection
     @Column(name = "location")
-    private List<String> locations = new ArrayList<>();
+    private List<String> salvoLocations = new ArrayList<>();
 
     public Salvo(){
     }
@@ -28,7 +28,7 @@ public class Salvo {
     public Salvo(int _turn, GamePlayer _gamePlayer, List<String> _locations){
         this.turn = _turn;
         _gamePlayer.addSalvo(this);
-        this.locations = _locations;
+        this.salvoLocations = _locations;
     }
 
     public long getId(){
@@ -51,19 +51,19 @@ public class Salvo {
         this.gamePlayer = _gamePlayer;
     }
 
-    public List<String> getLocations(){
-        return this.locations;
+    public List<String> getSalvoLocations(){
+        return this.salvoLocations;
     }
 
     public void addLocation(String _location){
-        this.locations.add(_location);
+        this.salvoLocations.add(_location);
     }
 
     public Map<String, Object> getInfo(){
         Map<String, Object> dto = new LinkedHashMap<String, Object>();
         dto.put("turn", getTurn());
         dto.put("player", getGamePlayer().getPlayer().getId());
-        dto.put("locations", getLocations());
+        dto.put("locations", getSalvoLocations());
         return dto;
     }
 }
