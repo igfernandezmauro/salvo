@@ -150,21 +150,31 @@ public class GamesController {
             GamePlayer gp = gamePlayerServiceImplementation.findGamePlayerById(gamePlayerId);
             if(gp != null){
                 if(gp.getPlayer().equals(getAuthenticatedPlayer(auth))){
-                    int selfSalvoes = gp.getSalvoes().size();
-                    int opponentSalvoes = gp.getGame().getGamePlayers().stream().
-                            map(gamePlayer -> gamePlayer.getPlayer() != gp.getPlayer()).collect(toList()).size();
-                    if(selfSalvoes <= opponentSalvoes){
-                        int shotsAmmount = salvo.getSalvoLocations().size();
-                        if(shotsAmmount >= 1 && shotsAmmount <= 5){
-                            int salvoesFired = gp.getSalvoes().size();
-                            salvo.setTurn(salvoesFired+1);
-                            gp.addSalvo(salvo);
-                            salvoServiceImplementation.saveSalvo(salvo);
-                            return new ResponseEntity<>(Util.makeMap("OK", "Salvo fired"), HttpStatus.CREATED);
+                    Optional<GamePlayer> opponentGamePlayer = gp.getGame().getGamePlayers().stream().
+                            filter(gamePlayer -> gamePlayer.getPlayer() != gp.getPlayer()).findFirst();
+                    if(opponentGamePlayer.isPresent()){
+                        if(gp.getShips().size() != 0){
+                            if(opponentGamePlayer.get().getShips().size() != 0){
+                                int selfSalvoes = gp.getSalvoes().size();
+                                int opponentSalvoes = opponentGamePlayer.get().getSalvoes().size();
+                                if(selfSalvoes <= opponentSalvoes){
+                                    int shotsAmmount = salvo.getSalvoLocations().size();
+                                    if(shotsAmmount >= 1 && shotsAmmount <= 5){
+                                        int salvoesFired = gp.getSalvoes().size();
+                                        salvo.setTurn(salvoesFired+1);
+                                        gp.addSalvo(salvo);
+                                        salvoServiceImplementation.saveSalvo(salvo);
+                                        return new ResponseEntity<>(Util.makeMap("OK", "Salvo fired"), HttpStatus.CREATED);
+                                    }
+                                    return new ResponseEntity<>(Util.makeMap("error", "Wrong shots ammount for Salvo"), HttpStatus.UNAUTHORIZED);
+                                }
+                                return new ResponseEntity<>(Util.makeMap("error", "Waiting for your opponent turn"), HttpStatus.UNAUTHORIZED);
+                            }
+                            return new ResponseEntity<>(Util.makeMap("error", "Please wait for your opponent to place their ships"), HttpStatus.UNAUTHORIZED);
                         }
-                        return new ResponseEntity<>(Util.makeMap("error", "Wrong shots ammount for Salvo"), HttpStatus.UNAUTHORIZED);
+                        return new ResponseEntity<>(Util.makeMap("error", "Please place your ships first"), HttpStatus.UNAUTHORIZED);
                     }
-                    return new ResponseEntity<>(Util.makeMap("error", "Can't fire salvo yet"), HttpStatus.UNAUTHORIZED);
+                    return new ResponseEntity<>(Util.makeMap("error", "No opponent"), HttpStatus.UNAUTHORIZED);
                 }
                 return new ResponseEntity<>(Util.makeMap("error", "Can't fire other player's salvoes"), HttpStatus.UNAUTHORIZED);
             }
