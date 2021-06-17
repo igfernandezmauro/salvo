@@ -99,11 +99,9 @@ public class Game {
             salvoDTO.put("hitLocations", hitLocations);
             for(String hit : hitLocations){
                 for(Ship ship : selfShips){
-                    List<String> shipLocations = ship.getShipLocations();
-                    for(String shipLocation : shipLocations){
+                    for(String shipLocation : ship.getShipLocations()){
                         if(hit.equals(shipLocation)){
-                            String shipType = ship.getType();
-                            switch (shipType){
+                            switch (ship.getType()){
                                 case "carrier":
                                     carrier++;
                                     carrierHits++;
@@ -154,8 +152,7 @@ public class Game {
         List<String> salvoLocations = salvo.getSalvoLocations();
         for(String salvoLocation : salvoLocations){
             for(Ship ship : ships){
-                List<String> shipLocations = ship.getShipLocations();
-                for(String shipLocation : shipLocations){
+                for(String shipLocation : ship.getShipLocations()){
                     if(salvoLocation.equals(shipLocation)) hitLocations.add(salvoLocation);
                 }
             }
