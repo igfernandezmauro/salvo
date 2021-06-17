@@ -4,6 +4,7 @@ import com.codeoftheweb.salvo.model.GamePlayer;
 import com.codeoftheweb.salvo.model.Player;
 import com.codeoftheweb.salvo.service.implementation.GamePlayerServiceImplementation;
 import com.codeoftheweb.salvo.service.implementation.PlayerServiceImplementation;
+import com.codeoftheweb.salvo.util.Util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,18 +34,12 @@ public class SalvoController {
             if(gp.getPlayer().equals(player)) {
                 return new ResponseEntity<>(gp.getGame().getInfo(gp), HttpStatus.OK);
             }
-            return new ResponseEntity<>(makeMap("error", "Can't see other player's information"), HttpStatus.FORBIDDEN);
+            return new ResponseEntity<>(Util.makeMap("error", "Can't see other player's information"), HttpStatus.FORBIDDEN);
         }
-        return new ResponseEntity<>(makeMap("error", "GamePlayer doesn't exist"), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(Util.makeMap("error", "GamePlayer doesn't exist"), HttpStatus.BAD_REQUEST);
     }
 
     private Player getAuthenticatedPlayer(Authentication auth){
         return playerServiceImplementation.findPlayerByUsername(auth.getName());
-    }
-
-    private Map<String, Object> makeMap(String key, Object value){
-        Map<String, Object> map = new HashMap<>();
-        map.put(key, value);
-        return map;
     }
 }
