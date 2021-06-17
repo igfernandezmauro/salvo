@@ -70,11 +70,11 @@ public class Game {
 
     public Map<String, Object> getInfo(GamePlayer gp){
         GamePlayer opponent = players.stream().filter(gamePlayer -> gamePlayer.getPlayer() != gp.getPlayer()).
-                findFirst().get();
+                findFirst().orElse(new GamePlayer());
         Map<String, Object> dto = new LinkedHashMap<String, Object>();
         Map<String, Object> hits = new LinkedHashMap<String, Object>();
-        hits.put("self", createHits(gp)); //Self: cuando me pegan a mi
-        hits.put("opponent", createHits(opponent)); //Opponent; Cuando yo pego
+        hits.put("self", createHits(gp,opponent)); //Self: cuando me pegan a mi
+        hits.put("opponent", createHits(opponent, gp)); //Opponent; Cuando yo pego
         dto.put("id", getId());
         dto.put("created", getCreationDate());
         dto.put("gameState", "PLACESHIPS");
@@ -85,10 +85,9 @@ public class Game {
         return dto;
     }
 
-    private List<Object> createHits(GamePlayer gamePlayer){
+    private List<Object> createHits(GamePlayer gamePlayer, GamePlayer opponent){
         Set<Ship> selfShips = gamePlayer.getShips();
-        List<Salvo> opponentSalvoes = getGamePlayers().stream().filter(gp -> gp.getPlayer() != gamePlayer.getPlayer()).
-                findFirst().get().getSalvoes().stream().sorted(Comparator.comparingInt(Salvo::getTurn)).collect(toList());
+        List<Salvo> opponentSalvoes = opponent.getSalvoes().stream().sorted(Comparator.comparingInt(Salvo::getTurn)).collect(toList());
         List<Object> hits = new LinkedList<>();
         int carrier = 0, battleship = 0, submarine = 0, destroyer = 0, patrolboat = 0;
         for(Salvo salvo : opponentSalvoes){
