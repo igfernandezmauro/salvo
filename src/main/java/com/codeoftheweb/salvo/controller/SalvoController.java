@@ -40,23 +40,25 @@ public class SalvoController {
         if(gp != null){
             if(gp.getPlayer().equals(player)) {
                 if(Util.getRemainingShips(gp) == 0 || Util.getRemainingShips(opponent) == 0){
-                    if(!checkScoreExists(gp)){
-                        Score playerScore = new Score();
-                        playerScore.setGame(gp.getGame());
-                        playerScore.setPlayer(gp.getPlayer());
-                        playerScore.setFinishDate(new Date());
-                        if(Util.getRemainingShips(gp) == 0){
-                            if(Util.getRemainingShips(opponent) == 0){
-                                playerScore.setScore(0.5);
+                    if(opponent.getShips().size() != 0){
+                        if(!checkScoreExists(gp)){
+                            Score playerScore = new Score();
+                            playerScore.setGame(gp.getGame());
+                            playerScore.setPlayer(gp.getPlayer());
+                            playerScore.setFinishDate(new Date());
+                            if(Util.getRemainingShips(gp) == 0){
+                                if(Util.getRemainingShips(opponent) == 0){
+                                    playerScore.setScore(0.5);
+                                }
+                                else{
+                                    playerScore.setScore(0);
+                                }
                             }
                             else{
-                                playerScore.setScore(0);
+                                playerScore.setScore(1);
                             }
+                            scoreServiceImplementation.saveScore(playerScore);
                         }
-                        else{
-                            playerScore.setScore(1);
-                        }
-                        scoreServiceImplementation.saveScore(playerScore);
                     }
                 }
                 return new ResponseEntity<>(gp.getGame().getInfo(gp), HttpStatus.OK);
