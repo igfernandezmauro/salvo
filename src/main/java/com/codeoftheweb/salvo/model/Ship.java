@@ -75,6 +75,7 @@ public class Ship {
         Map<String, Object> dto = new LinkedHashMap<String, Object>();
         dto.put("type", getType());
         dto.put("locations", getShipLocations());
+        dto.put("sunk", isSunk());
         return dto;
     }
 }
