@@ -39,7 +39,7 @@ public class SalvoController {
         Player player = getAuthenticatedPlayer(auth);
         if(gp != null){
             if(gp.getPlayer().equals(player)) {
-                if(getRemainingShips(gp) == 0 || getRemainingShips(opponent) == 0){
+                if(Util.getRemainingShips(gp) == 0 || Util.getRemainingShips(opponent) == 0){
                     if(opponent.getId() != 0){
                         if(!checkScoreExists(gp) && !checkScoreExists(opponent)){
                             Score playerScore = new Score();
@@ -50,8 +50,8 @@ public class SalvoController {
                             opponentScore.setGame(opponent.getGame());
                             opponentScore.setPlayer(opponent.getPlayer());
                             opponentScore.setFinishDate(new Date());
-                            if(getRemainingShips(gp) == 0){
-                                if(getRemainingShips(opponent) == 0){
+                            if(Util.getRemainingShips(gp) == 0){
+                                if(Util.getRemainingShips(opponent) == 0){
                                     playerScore.setScore(0.5);
                                     opponentScore.setScore(0.5);
                                 }
@@ -86,13 +86,5 @@ public class SalvoController {
             if(score.getPlayer().equals(gp.getPlayer())) return true;
         }
         return false;
-    }
-
-    private int getRemainingShips(GamePlayer gp){
-        int sunkShips = 0;
-        for(Ship ship : gp.getShips()){
-            if(ship.isSunk()) sunkShips++;
-        }
-        return gp.getShips().size() - sunkShips;
     }
 }

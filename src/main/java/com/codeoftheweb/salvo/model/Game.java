@@ -178,8 +178,8 @@ public class Game {
             }
             else{
                 if(gamePlayer.getSalvoes().size() <= opponent.getSalvoes().size()){
-                    int gamePlayerRemainingShips = getRemainingShips(gamePlayer),
-                            opponentRemainingShips = getRemainingShips(opponent);
+                    int gamePlayerRemainingShips = Util.getRemainingShips(gamePlayer),
+                            opponentRemainingShips = Util.getRemainingShips(opponent);
                     if(gamePlayerRemainingShips == 0 || opponentRemainingShips == 0){
                         if(gamePlayerRemainingShips == 0){
                             if(opponentRemainingShips == 0) return "TIE";
@@ -196,14 +196,6 @@ public class Game {
                 }
             }
         }
-    }
-
-    private int getRemainingShips(GamePlayer gp){
-        int sunkShips = 0;
-        for(Ship ship : gp.getShips()){
-            if(ship.isSunk()) sunkShips++;
-        }
-        return gp.getShips().size() - sunkShips;
     }
 
 }

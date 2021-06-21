@@ -2,6 +2,7 @@ package com.codeoftheweb.salvo.util;
 
 import com.codeoftheweb.salvo.model.Game;
 import com.codeoftheweb.salvo.model.GamePlayer;
+import com.codeoftheweb.salvo.model.Ship;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 
@@ -27,5 +28,13 @@ public class Util {
     public static GamePlayer getOpponent(GamePlayer gp){
          return gp.getGame().getGamePlayers().stream().filter(gamePlayer -> gamePlayer.getPlayer() != gp.getPlayer()).
                 findFirst().orElse(new GamePlayer());
+    }
+
+    public static int getRemainingShips(GamePlayer gp){
+        int sunkShips = 0;
+        for(Ship ship : gp.getShips()){
+            if(ship.isSunk()) sunkShips++;
+        }
+        return gp.getShips().size() - sunkShips;
     }
 }
