@@ -46,26 +46,18 @@ public class SalvoController {
                             playerScore.setGame(gp.getGame());
                             playerScore.setPlayer(gp.getPlayer());
                             playerScore.setFinishDate(new Date());
-                            Score opponentScore = new Score();
-                            opponentScore.setGame(opponent.getGame());
-                            opponentScore.setPlayer(opponent.getPlayer());
-                            opponentScore.setFinishDate(new Date());
                             if(Util.getRemainingShips(gp) == 0){
                                 if(Util.getRemainingShips(opponent) == 0){
                                     playerScore.setScore(0.5);
-                                    opponentScore.setScore(0.5);
                                 }
                                 else{
                                     playerScore.setScore(0);
-                                    opponentScore.setScore(1);
                                 }
                             }
                             else{
                                 playerScore.setScore(1);
-                                opponentScore.setScore(0);
                             }
                             scoreServiceImplementation.saveScore(playerScore);
-                            scoreServiceImplementation.saveScore(opponentScore);
                         }
                     }
                 }
