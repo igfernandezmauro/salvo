@@ -2,8 +2,11 @@ package com.codeoftheweb.salvo.controller;
 
 import com.codeoftheweb.salvo.model.GamePlayer;
 import com.codeoftheweb.salvo.model.Player;
+import com.codeoftheweb.salvo.model.Score;
+import com.codeoftheweb.salvo.model.Ship;
 import com.codeoftheweb.salvo.service.implementation.GamePlayerServiceImplementation;
 import com.codeoftheweb.salvo.service.implementation.PlayerServiceImplementation;
+import com.codeoftheweb.salvo.service.implementation.ScoreServiceImplementation;
 import com.codeoftheweb.salvo.util.Util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,15 +26,49 @@ public class SalvoController {
     @Autowired
     private PlayerServiceImplementation playerServiceImplementation;
 
+    @Autowired
+    private ScoreServiceImplementation scoreServiceImplementation;
+
     public SalvoController() {
     }
 
     @RequestMapping("/game_view/{gamePlayerId}")
     public ResponseEntity<Map<String, Object>> getGameViews(@PathVariable long gamePlayerId, Authentication auth){
         GamePlayer gp = gamePlayerServiceImplementation.findGamePlayerById(gamePlayerId);
+        GamePlayer opponent = Util.getOpponent(gp);
         Player player = getAuthenticatedPlayer(auth);
         if(gp != null){
             if(gp.getPlayer().equals(player)) {
+                if(getRemainingShips(gp) == 0 || getRemainingShips(opponent) == 0){
+                    if(opponent.getId() != 0){
+                        if(!checkScoreExists(gp) && !checkScoreExists(opponent)){
+                            Score playerScore = new Score();
+                            playerScore.setGame(gp.getGame());
+                            playerScore.setPlayer(gp.getPlayer());
+                            playerScore.setFinishDate(new Date());
+                            Score opponentScore = new Score();
+                            opponentScore.setGame(opponent.getGame());
+                            opponentScore.setPlayer(opponent.getPlayer());
+                            opponentScore.setFinishDate(new Date());
+                            if(getRemainingShips(gp) == 0){
+                                if(getRemainingShips(opponent) == 0){
+                                    playerScore.setScore(0.5);
+                                    opponentScore.setScore(0.5);
+                                }
+                                else{
+                                    playerScore.setScore(0);
+                                    opponentScore.setScore(1);
+                                }
+                            }
+                            else{
+                                playerScore.setScore(1);
+                                opponentScore.setScore(0);
+                            }
+                            scoreServiceImplementation.saveScore(playerScore);
+                            scoreServiceImplementation.saveScore(opponentScore);
+                        }
+                    }
+                }
                 return new ResponseEntity<>(gp.getGame().getInfo(gp), HttpStatus.OK);
             }
             return new ResponseEntity<>(Util.makeMap("error", "Can't see other player's information"), HttpStatus.FORBIDDEN);
@@ -41,5 +78,21 @@ public class SalvoController {
 
     private Player getAuthenticatedPlayer(Authentication auth){
         return playerServiceImplementation.findPlayerByUsername(auth.getName());
+    }
+
+    private boolean checkScoreExists(GamePlayer gp){
+        List<Score> gameScores = scoreServiceImplementation.findScoresByGameId(gp.getGame().getId());
+        for(Score score : gameScores){
+            if(score.getPlayer().equals(gp.getPlayer())) return true;
+        }
+        return false;
+    }
+
+    private int getRemainingShips(GamePlayer gp){
+        int sunkShips = 0;
+        for(Ship ship : gp.getShips()){
+            if(ship.isSunk()) sunkShips++;
+        }
+        return gp.getShips().size() - sunkShips;
     }
 }

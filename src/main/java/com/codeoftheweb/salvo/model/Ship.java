@@ -16,6 +16,7 @@ public class Ship {
     @GenericGenerator(name = "native", strategy = "native")
     private long id;
     private String type;
+    private boolean sunk = false;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "gamePlayer_id")
@@ -44,6 +45,14 @@ public class Ship {
 
     public void setType(String _shipType){
         this.type = _shipType;
+    }
+
+    public boolean isSunk() {
+        return this.sunk;
+    }
+
+    public void setSunk(boolean _sunk) {
+        this.sunk = _sunk;
     }
 
     public GamePlayer getGamePlayer(){

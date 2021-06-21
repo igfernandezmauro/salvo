@@ -1,10 +1,7 @@
 package com.codeoftheweb.salvo.util;
 
 import com.codeoftheweb.salvo.model.Game;
-import com.codeoftheweb.salvo.model.Player;
-import com.codeoftheweb.salvo.service.PlayerService;
-import com.codeoftheweb.salvo.service.implementation.PlayerServiceImplementation;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.codeoftheweb.salvo.model.GamePlayer;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 
@@ -25,5 +22,10 @@ public class Util {
 
     public static boolean isGameFull(Game game){
         return !(game.getGamePlayers().size() < 2);
+    }
+
+    public static GamePlayer getOpponent(GamePlayer gp){
+         return gp.getGame().getGamePlayers().stream().filter(gamePlayer -> gamePlayer.getPlayer() != gp.getPlayer()).
+                findFirst().orElse(new GamePlayer());
     }
 }

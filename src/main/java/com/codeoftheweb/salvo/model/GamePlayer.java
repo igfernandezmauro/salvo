@@ -84,7 +84,6 @@ public class GamePlayer {
     }
 
     public Map<String, Object> getPlayerInfo(){
-        Score score = getPlayer().getScore(getGame());
         Map<String, Object> dto = new LinkedHashMap<String, Object>();
         dto.put("id", getId());
         dto.put("player", getPlayer().getInfo());

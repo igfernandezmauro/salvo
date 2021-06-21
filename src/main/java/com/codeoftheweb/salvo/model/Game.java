@@ -1,6 +1,8 @@
 package com.codeoftheweb.salvo.model;
 
+import com.codeoftheweb.salvo.util.Util;
 import org.hibernate.annotations.GenericGenerator;
+import org.springframework.beans.factory.annotation.Autowired;
 import javax.persistence.*;
 import java.util.*;
 import static java.util.stream.Collectors.toList;
@@ -69,15 +71,14 @@ public class Game {
     }
 
     public Map<String, Object> getInfo(GamePlayer gp){
-        GamePlayer opponent = players.stream().filter(gamePlayer -> gamePlayer.getPlayer() != gp.getPlayer()).
-                findFirst().orElse(new GamePlayer());
+        GamePlayer opponent = Util.getOpponent(gp);
         Map<String, Object> dto = new LinkedHashMap<String, Object>();
         Map<String, Object> hits = new LinkedHashMap<String, Object>();
-        hits.put("self", createHits(gp,opponent)); //Self: cuando me pegan a mi
-        hits.put("opponent", createHits(opponent, gp)); //Opponent; Cuando yo pego
+        hits.put("self", createHits(gp,opponent));
+        hits.put("opponent", createHits(opponent, gp));
         dto.put("id", getId());
         dto.put("created", getCreationDate());
-        dto.put("gameState", "PLACESHIPS");
+        dto.put("gameState", getGameState(gp, opponent));
         dto.put("gamePlayers", getGamePlayers().stream().map(GamePlayer::getPlayerInfo).collect(toList()));
         dto.put("ships", gp.getShips().stream().map(Ship::getInfo).collect(toList()));
         dto.put("salvoes", getGamePlayers().stream().map(GamePlayer::getSalvoesInfo).flatMap(Collection::stream).collect(toList()));
@@ -103,22 +104,27 @@ public class Game {
                             switch (ship.getType()){
                                 case "carrier":
                                     carrier++;
+                                    if(carrier == 5) ship.setSunk(true);
                                     carrierHits++;
                                     break;
                                 case "battleship":
                                     battleship++;
+                                    if(battleship == 4) ship.setSunk(true);
                                     battleshipHits++;
                                     break;
                                 case "submarine":
                                     submarine++;
+                                    if(submarine == 3) ship.setSunk(true);
                                     submarineHits++;
                                     break;
                                 case "destroyer":
                                     destroyer++;
+                                    if(destroyer == 3) ship.setSunk(true);
                                     destroyerHits++;
                                     break;
                                 case "patrolboat":
                                     patrolboat++;
+                                    if(patrolboat == 2) ship.setSunk(true);
                                     patrolboatHits++;
                                     break;
                                 default:
@@ -158,4 +164,46 @@ public class Game {
         }
         return hitLocations;
     }
+
+    private String getGameState(GamePlayer gamePlayer, GamePlayer opponent){
+        if(gamePlayer.getShips().size() == 0){
+            return "PLACESHIPS";
+        }
+        else if(gamePlayer.getGame().getGamePlayers().size() == 1){
+            return "WAITINGFOROPP";
+        }
+        else{
+            if(opponent.getShips().size() == 0){
+                return "WAIT";
+            }
+            else{
+                if(gamePlayer.getSalvoes().size() <= opponent.getSalvoes().size()){
+                    int gamePlayerRemainingShips = getRemainingShips(gamePlayer),
+                            opponentRemainingShips = getRemainingShips(opponent);
+                    if(gamePlayerRemainingShips == 0 || opponentRemainingShips == 0){
+                        if(gamePlayerRemainingShips == 0){
+                            if(opponentRemainingShips == 0) return "TIE";
+                            else return "LOST";
+                        }
+                        else return "WON";
+                    }
+                    else{
+                        return "PLAY";
+                    }
+                }
+                else{
+                    return "WAIT";
+                }
+            }
+        }
+    }
+
+    private int getRemainingShips(GamePlayer gp){
+        int sunkShips = 0;
+        for(Ship ship : gp.getShips()){
+            if(ship.isSunk()) sunkShips++;
+        }
+        return gp.getShips().size() - sunkShips;
+    }
+
 }

@@ -168,7 +168,7 @@ public class GamesController {
                                     }
                                     return new ResponseEntity<>(Util.makeMap("error", "Wrong shots ammount for Salvo"), HttpStatus.UNAUTHORIZED);
                                 }
-                                return new ResponseEntity<>(Util.makeMap("error", "Waiting for your opponent turn"), HttpStatus.UNAUTHORIZED);
+                                return new ResponseEntity<>(Util.makeMap("error", "Waiting for your opponent's turn"), HttpStatus.UNAUTHORIZED);
                             }
                             return new ResponseEntity<>(Util.makeMap("error", "Please wait for your opponent to place their ships"), HttpStatus.UNAUTHORIZED);
                         }
