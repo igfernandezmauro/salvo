@@ -1,9 +1,6 @@
 package com.codeoftheweb.salvo.controller;
 
-import com.codeoftheweb.salvo.model.GamePlayer;
-import com.codeoftheweb.salvo.model.Player;
-import com.codeoftheweb.salvo.model.Score;
-import com.codeoftheweb.salvo.model.Ship;
+import com.codeoftheweb.salvo.model.*;
 import com.codeoftheweb.salvo.service.implementation.GamePlayerServiceImplementation;
 import com.codeoftheweb.salvo.service.implementation.PlayerServiceImplementation;
 import com.codeoftheweb.salvo.service.implementation.ScoreServiceImplementation;
@@ -41,7 +38,7 @@ public class SalvoController {
             if(gp.getPlayer().equals(player)) {
                 if(Util.getRemainingShips(gp) == 0 || Util.getRemainingShips(opponent) == 0){
                     if(opponent.getShips().size() != 0){
-                        if(!checkScoreExists(gp)){
+                        if(!checkScoreExists(gp.getGame())){
                             Score playerScore = new Score();
                             playerScore.setGame(gp.getGame());
                             playerScore.setPlayer(gp.getPlayer());
@@ -72,11 +69,8 @@ public class SalvoController {
         return playerServiceImplementation.findPlayerByUsername(auth.getName());
     }
 
-    private boolean checkScoreExists(GamePlayer gp){
-        List<Score> gameScores = scoreServiceImplementation.findScoresByGameId(gp.getGame().getId());
-        for(Score score : gameScores){
-            if(score.getPlayer().equals(gp.getPlayer())) return true;
-        }
-        return false;
+    private boolean checkScoreExists(Game game){
+        List<Score> gameScores = scoreServiceImplementation.findScoresByGameId(game.getId());
+        return (gameScores.size() != 0);
     }
 }
