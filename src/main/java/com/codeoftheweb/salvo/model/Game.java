@@ -2,7 +2,6 @@ package com.codeoftheweb.salvo.model;
 
 import com.codeoftheweb.salvo.util.Util;
 import org.hibernate.annotations.GenericGenerator;
-import org.springframework.beans.factory.annotation.Autowired;
 import javax.persistence.*;
 import java.util.*;
 import static java.util.stream.Collectors.toList;
