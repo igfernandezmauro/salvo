@@ -177,8 +177,8 @@ public class Game {
             }
             else{
                 if(gamePlayer.getSalvoes().size() <= opponent.getSalvoes().size()){
-                    int gamePlayerRemainingShips = Util.getRemainingShips(gamePlayer),
-                            opponentRemainingShips = Util.getRemainingShips(opponent);
+                    int gamePlayerRemainingShips = gamePlayer.getRemainingShips(),
+                            opponentRemainingShips = opponent.getRemainingShips();
                     if(gamePlayerRemainingShips == 0 || opponentRemainingShips == 0){
                         if(gamePlayerRemainingShips == 0){
                             if(opponentRemainingShips == 0) return "TIE";

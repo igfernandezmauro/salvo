@@ -109,4 +109,12 @@ public class GamePlayer {
         return this.getSalvoes().stream().map(Salvo::getInfo).collect(toList());
     }
 
+    public int getRemainingShips(){
+        int sunkShips = 0;
+        for(Ship ship : getShips()){
+            if(ship.isSunk()) sunkShips++;
+        }
+        return (getShips().size() - sunkShips);
+    }
+
 }

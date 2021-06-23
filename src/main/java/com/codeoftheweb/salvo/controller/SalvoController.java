@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 @RestController
@@ -36,29 +37,37 @@ public class SalvoController {
         Player player = getAuthenticatedPlayer(auth);
         if(gp != null){
             if(gp.getPlayer().equals(player)) {
-                if(Util.getRemainingShips(gp) == 0 || Util.getRemainingShips(opponent) == 0){
-                    if(opponent.getShips().size() != 0){
-                        if(!checkScoreExists(gp.getGame())){
-                            Score playerScore = new Score();
-                            playerScore.setGame(gp.getGame());
-                            playerScore.setPlayer(gp.getPlayer());
-                            playerScore.setFinishDate(new Date());
-                            if(Util.getRemainingShips(gp) == 0){
-                                if(Util.getRemainingShips(opponent) == 0){
-                                    playerScore.setScore(0.5);
-                                }
-                                else{
-                                    playerScore.setScore(0);
-                                }
-                            }
-                            else{
-                                playerScore.setScore(1);
-                            }
-                            scoreServiceImplementation.saveScore(playerScore);
-                        }
-                    }
+                Map<String, Object> finalDTO = gp.getGame().getInfo(gp);
+                if(gp.getShips().size() != 0){
+                   if(gp.getGame().getGamePlayers().size() != 1){
+                       if(opponent.getShips().size() != 0){
+                           if(gp.getRemainingShips() == 0 || opponent.getRemainingShips() == 0){
+                               if(gp.getSalvoes().size() == opponent.getSalvoes().size()){
+                                   if(!checkScoreExists(gp)){
+                                       Score playerScore = new Score();
+                                       playerScore.setGame(gp.getGame());
+                                       playerScore.setPlayer(gp.getPlayer());
+                                       playerScore.setFinishDate(new Date());
+                                       if(gp.getRemainingShips() == 0){
+                                           if(opponent.getRemainingShips() == 0){
+                                               playerScore.setScore(0.5);
+                                           }
+                                           else{
+                                               playerScore.setScore(0);
+                                           }
+                                       }
+                                       else{
+                                           playerScore.setScore(1);
+                                       }
+                                       System.out.println(playerScore.getInfo());
+                                       scoreServiceImplementation.saveScore(playerScore);
+                                   }
+                               }
+                           }
+                       }
+                   }
                 }
-                return new ResponseEntity<>(gp.getGame().getInfo(gp), HttpStatus.OK);
+                return new ResponseEntity<>(finalDTO, HttpStatus.OK);
             }
             return new ResponseEntity<>(Util.makeMap("error", "Can't see other player's information"), HttpStatus.FORBIDDEN);
         }
@@ -69,8 +78,9 @@ public class SalvoController {
         return playerServiceImplementation.findPlayerByUsername(auth.getName());
     }
 
-    private boolean checkScoreExists(Game game){
-        List<Score> gameScores = scoreServiceImplementation.findScoresByGameId(game.getId());
-        return (gameScores.size() != 0);
+    private boolean checkScoreExists(GamePlayer gamePlayer){
+        List<Score> gameScores = scoreServiceImplementation.findScoresByGameId(gamePlayer.getGame().getId());
+        List<Score> gamePlayerScores = gameScores.stream().filter(s -> s.getPlayer() == gamePlayer.getPlayer()).collect(Collectors.toList());
+        return (gamePlayerScores.size() == 1);
     }
 }

@@ -29,12 +29,4 @@ public class Util {
          return gp.getGame().getGamePlayers().stream().filter(gamePlayer -> gamePlayer.getPlayer() != gp.getPlayer()).
                 findFirst().orElse(new GamePlayer());
     }
-
-    public static int getRemainingShips(GamePlayer gp){
-        int sunkShips = 0;
-        for(Ship ship : gp.getShips()){
-            if(ship.isSunk()) sunkShips++;
-        }
-        return gp.getShips().size() - sunkShips;
-    }
 }
